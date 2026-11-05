@@ -38,3 +38,4 @@ yarn-error.log*
 .codex/
 .claude/*.local.json
 .claude/**/*.log
+.opencode/runs/
