@@ -19,7 +19,8 @@ describe('rrLevels', () => {
   it('short entry 100 stop 110 k 3 gives reward [100, 70]', () => {
     const box: RRBox = { side: 'short', entry: 100, stop: 110, k: 3, t0: 0 as any, t1: 1 as any };
     const levels = rrLevels(box);
-    expect(levels.reward).toEqual([70, 100]);
+    expect(levels.reward).toEqual([100, 70]);
+    expect(levels.risk).toEqual([110, 100]);
   });
 });
 
@@ -35,6 +36,18 @@ describe('rrRects', () => {
     const riskH = rects!.risk.h;
     const rewardH = rects!.reward.h;
     expect(rewardH).toBe(riskH * box.k);
+  });
+
+  it('short rects still span min price to max price', () => {
+    const box: RRBox = { side: 'short', entry: 100, stop: 110, k: 3, t0: 0 as any, t1: 1 as any };
+    const scales: NagaScales = {
+      x: fakeScale({ '0': 10, '1': 110 }),
+      y: fakeScale({ '110': 0, '100': 100, '70': 400 }),
+    };
+    const rects = rrRects(box, scales);
+    expect(rects).not.toBeNull();
+    expect(rects!.risk).toEqual({ x: 10, y: 0, w: 100, h: 100 });
+    expect(rects!.reward).toEqual({ x: 10, y: 100, w: 100, h: 300 });
   });
 });
 

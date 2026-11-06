@@ -15,18 +15,12 @@ export interface RRBox {
 export function rrLevels(b: RRBox): { risk: [number, number]; reward: [number, number] } {
   const riskSize = Math.abs(b.entry - b.stop);
   const rewardSize = riskSize * b.k;
+  const target = b.side === 'long' ? b.entry + rewardSize : b.entry - rewardSize;
 
-  if (b.side === 'long') {
-    return {
-      risk: [b.stop, b.entry],
-      reward: [b.entry, b.entry + rewardSize],
-    };
-  } else {
-    return {
-      risk: [b.entry, b.stop],
-      reward: [b.entry - rewardSize, b.entry],
-    };
-  }
+  return {
+    risk: [b.stop, b.entry],
+    reward: [b.entry, target],
+  };
 }
 
 export function rrRects(b: RRBox, s: NagaScales): { risk: NagaRect; reward: NagaRect } | null {
