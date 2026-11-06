@@ -2,6 +2,11 @@
   "extends": "../tsconfig.app.json",
   "compilerOptions": {
     "sourceMap": false,
+    // e2e specs read process.env and node builtins (node:fs, node:path) to
+    // write screenshots where NAGA_SHOT_PATH points. Inherited "types" from
+    // tsconfig.app.json is ["vite/client"] only, and arrays are replaced, not
+    // merged, so "node" has to be restated here alongside vite/client.
+    "types": ["vite/client", "node"],
   },
   "include": [
     "*.ts",

@@ -29,6 +29,7 @@ const settingsStore = useSettingsStore();
 const colorStore = useColorStore();
 const botStore = useBotStore();
 const plotStore = usePlotConfigStore();
+const { chartEnabled: nagaChartEnabled } = useNagaSettings();
 
 const dataset = computed((): PairHistory | undefined => {
   if (props.historicView) {
@@ -159,8 +160,16 @@ watch(
     </div>
     <div class="h-full flex">
       <div class="min-w-0 w-full flex-1">
+        <NagaCandleChart
+          v-if="nagaChartEnabled && hasDataset && dataset"
+          :dataset="dataset"
+          :theme="settingsStore.chartTheme"
+          :color-up="colorStore.colorUp"
+          :color-down="colorStore.colorDown"
+          :start-candle-count="settingsStore.chartDefaultCandleCount"
+        />
         <CandleChart
-          v-if="hasDataset && dataset"
+          v-else-if="hasDataset && dataset"
           :dataset="dataset"
           :trades="trades"
           :plot-config="plotStore.plotConfig"

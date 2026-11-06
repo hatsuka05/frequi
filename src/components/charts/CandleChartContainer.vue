@@ -176,6 +176,7 @@ const singlePairSelection = computed({
           <span class="text-nowrap">Multi pair</span>
         </BaseCheckbox>
         <div class="ms-auto flex flex-wrap items-center gap-2">
+          <NagaChartToggle />
           <BaseCheckbox v-model="settingsStore.showMarkArea">
             <span class="text-nowrap">Show Chart Areas</span>
           </BaseCheckbox>
