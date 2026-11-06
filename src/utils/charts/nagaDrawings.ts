@@ -35,6 +35,54 @@ export function drawingsKey(pair: string, timeframe: string): string {
   return `nagaDrawings:${pair}:${timeframe}`;
 }
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+function isNum(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v);
+}
+
+function isSide(v: unknown): v is 'long' | 'short' {
+  return v === 'long' || v === 'short';
+}
+
+// localStorage is user-editable: anything that is not a complete drawing of a
+// known kind is dropped here, so no consumer can ever see a null or partial item.
+function isStoredDrawing(v: unknown): v is NagaDrawing {
+  if (!isRecord(v) || typeof v.id !== 'string') return false;
+  switch (v.kind) {
+    case 'rr': {
+      const b = v.box;
+      return (
+        isRecord(b) &&
+        isSide(b.side) &&
+        isNum(b.entry) &&
+        isNum(b.stop) &&
+        isNum(b.k) &&
+        isNum(b.t0) &&
+        isNum(b.t1)
+      );
+    }
+    case 'zone': {
+      const z = v.zone;
+      return (
+        isRecord(z) && isNum(z.t0) && isNum(z.t1) && isNum(z.top) && isNum(z.bottom)
+      );
+    }
+    case 'arrow': {
+      const a = v.arrow;
+      return isRecord(a) && isNum(a.t0) && isNum(a.p0) && isNum(a.t1) && isNum(a.p1);
+    }
+    case 'entry': {
+      const m = v.mark;
+      return isRecord(m) && isNum(m.time) && isNum(m.price) && isSide(m.side);
+    }
+    default:
+      return false;
+  }
+}
+
 export function loadDrawings(pair: string, timeframe: string): NagaDrawing[] {
   const key = drawingsKey(pair, timeframe);
   try {
@@ -42,7 +90,7 @@ export function loadDrawings(pair: string, timeframe: string): NagaDrawing[] {
     if (raw === null) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed as NagaDrawing[];
+    return parsed.filter(isStoredDrawing);
   } catch {
     return [];
   }

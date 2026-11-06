@@ -86,6 +86,29 @@ describe('loadDrawings / saveDrawings', () => {
   it('returns [] when nothing was saved', () => {
     expect(loadDrawings('BTC_USDT', '1h')).toEqual([]);
   });
+
+  it('drops malformed and unknown items, keeping valid ones', () => {
+    const valid: NagaDrawing = {
+      id: 'ok-entry-1',
+      kind: 'entry',
+      mark: { time: 1 as UTCTimestamp, price: 29100, side: 'short' },
+    };
+    storage[drawingsKey('BTC_USDT', '1h')] = JSON.stringify([
+      null,
+      'just a string item',
+      42,
+      { id: 'bad-rr-missing-box', kind: 'rr' },
+      { id: 'bad-no-kind' },
+      { id: 'bad-unknown-kind', kind: 'triangle', whatever: { a: 1 } },
+      { id: 'bad-zone-string-times', kind: 'zone', zone: { t0: 'x', t1: null } },
+      { id: 'bad-entry-null', kind: 'entry', mark: null },
+      valid,
+    ]);
+
+    const loaded = loadDrawings('BTC_USDT', '1h');
+    expect(loaded).toEqual([valid]);
+    for (const d of loaded) expect(() => createPrimitive(d)).not.toThrow();
+  });
 });
 
 describe('nextPlacement - entry', () => {
